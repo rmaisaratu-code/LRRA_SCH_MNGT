@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Learning Roots Royal Academy — School Portal</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111b52">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-side">
+    <div class="content">
+      <img src="assets/img/logo.png" alt="Learning Roots Royal Academy">
+      <h1>School Management Portal</h1>
+      <p style="margin-top:22px;font-size:12.5px;color:rgba(255,255,255,.55)">Kofare, Jimeta, Yola, Adamawa State, Nigeria</p>
+    </div>
+  </div>
+  <div class="login-form-side">
+    <div class="login-box">
+      <h2>Sign in to the Portal</h2>
+      <div class="login-error" id="loginError">Incorrect username or password.</div>
+      <div class="role-grid" id="roleGrid">
+        <div class="role-opt" data-role="teacher">Teacher</div>
+        <div class="role-opt active" data-role="admin">Admin</div>
+        <div class="role-opt" data-role="parent">Parent</div>
+      </div>
+      <div class="field" id="adminTypeField">
+        <label>Account</label>
+        <select id="adminType">
+          <option value="admin">Administrator</option>
+          <option value="hr">HR / Digital Officer</option>
+          <option value="transport">Transport Officer</option>
+          <option value="finance">Account / Finance Department</option>
+        </select>
+      </div>
+      <form id="loginForm">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn navy" type="submit" style="width:100%;padding:13px">Sign In</button>
+      </form>
+      <div class="demo-note" id="demoNote"></div>
+    </div>
+  </div>
+</div>
+<script src="assets/js/data.js"></script>
+<script>
+(function(){
+  const SCHOOL = window.SCHOOL;
+  let currentTile = "admin";
+  const dest = { admin: "admin.html", teacher: "teacher.html", parent: "parent.html", hr: "hr.html", transport: "transport.html", finance: "finance.html" };
+
+  function currentRole() { return currentTile === "admin" ? document.getElementById("adminType").value : currentTile; }
+
+  function updateFieldVisibility(){
+    document.getElementById("adminTypeField").style.display = currentTile === "admin" ? "block" : "none";
+  }
+  function updateDemoNote(){
+    const note = document.getElementById("demoNote");
+    const role = currentRole();
+    if (role === "teacher") {
+      const u = SCHOOL.users.find(x => x.role === "teacher");
+      note.innerHTML = `<b>Sign-in:</b> ${u.username} / teach123`;
+    } else {
+      const u = SCHOOL.users.find(x => x.role === role);
+      note.innerHTML = `<b>Sign-in:</b> ${u.username} / ${u.password}`;
+    }
+  }
+  document.querySelectorAll(".role-opt").forEach(opt => {
+    opt.addEventListener("click", () => {
+      document.querySelectorAll(".role-opt").forEach(o => o.classList.remove("active"));
+      opt.classList.add("active");
+      currentTile = opt.getAttribute("data-role");
+      updateFieldVisibility();
+      updateDemoNote();
+      document.getElementById("loginError").style.display = "none";
+    });
+  });
+  document.getElementById("adminType").addEventListener("change", updateDemoNote);
+  updateFieldVisibility();
+  updateDemoNote();
+
+  document.getElementById("loginForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    const u = document.getElementById("username").value.trim();
+    const p = document.getElementById("password").value.trim();
+    const role = currentRole();
+    const match = SCHOOL.users.find(x => x.role === role && x.username === u && x.password === p);
+    if (!match) { document.getElementById("loginError").style.display = "block"; return; }
+    localStorage.setItem("lrra_sms_session", JSON.stringify({ username: match.username, role: match.role, label: match.label, refId: match.refId }));
+    window.location.href = dest[match.role];
+  });
+
+  // if already logged in, offer quick redirect
+  try {
+    const s = JSON.parse(localStorage.getItem("lrra_sms_session"));
+    if (s) {
+      const dest = { admin: "admin.html", teacher: "teacher.html", parent: "parent.html", hr: "hr.html", transport: "transport.html", finance: "finance.html" }[s.role];
+      const note = document.createElement("div");
+      note.className = "demo-note";
+      note.innerHTML = `Already signed in as <b>${s.label}</b>. <a href="${dest}" style="color:var(--blue);font-weight:800">Continue to dashboard →</a>`;
+      document.querySelector(".login-box").appendChild(note);
+    }
+  } catch(e){}
+})();
+</script>
+</body>
+</html>

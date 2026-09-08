@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Dashboard — Learning Roots Royal Academy</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111b52">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="appbar">
+  <div class="appbar-inner">
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+    <div class="brand"><img src="assets/img/logo.png" alt="logo"><div><strong>Learning Roots Royal Academy</strong><small>HR / Digital Officer Portal</small></div></div>
+    <div class="spacer"></div>
+    <div class="role-pill" id="rolePill"></div>
+    <div class="bell" title="Notifications"><span>🔔</span><span class="dot"></span></div>
+    <button class="logout" id="logoutBtn">Sign out</button>
+  </div>
+</div>
+<div class="session-banner"><span id="termPill"></span></div>
+<div class="shell">
+  <div class="side" id="sideNav">
+    <div class="sec-label">Staff</div>
+    <a class="active" data-view-link="v-directory">👥 Staff Directory</a>
+    <div class="sec-label">Recruitment</div>
+    <a data-view-link="v-applications">📥 Applications</a>
+  </div>
+  <div class="main">
+
+    <div class="view active" id="v-directory">
+      <h1 class="page-title">Staff Directory</h1>
+            <div class="filterbar">
+        <input type="text" id="hSearch" placeholder="Search staff by name...">
+        <select id="hGender"><option value="">All Genders</option><option value="M">Male</option><option value="F">Female</option></select>
+        <select id="hClass"><option value="">All Classes Taught</option></select>
+        <select id="hDept"><option value="">All Departments</option></select>
+        <select id="hService"><option value="">Years of Service</option><option value="0-2">0–2 years</option><option value="3-5">3–5 years</option><option value="6+">6+ years</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Staff</th><th>Role</th><th>Department</th><th>Qualification</th><th>Years of Service</th><th>Email</th><th>Mobile</th></tr></thead>
+          <tbody id="hBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="view" id="v-applications">
+      <h1 class="page-title">Job Applications</h1>
+            <div class="filterbar">
+        <input type="text" id="appSearch" placeholder="Search by name or role...">
+        <select id="appStatus"><option value="">All Statuses</option><option>Pending</option><option>Under Review</option><option>Shortlisted</option></select>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Applicant</th><th>Role Applied For</th><th>Contact</th><th>Bio</th><th>Status</th><th>Date</th></tr></thead><tbody id="appBody"></tbody></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function(){
+  const A = window.APP, SCHOOL = A.SCHOOL;
+  const session = A.requireRole(["hr"]);
+  if (!session) return;
+  A.wireChrome(session);
+
+  const staff = SCHOOL.teachers.map(t => ({
+    name: t.name, role: t.role, department: "Academics", qualification: t.qualification, yearsOfService: t.yearsOfService,
+    email: t.email, mobile: t.mobile, classes: t.classes
+  })).concat(SCHOOL.leadershipStaff.map(l => ({
+    name: l.name, role: l.role, department: "Administration", qualification: l.qualification, yearsOfService: l.yearsOfService,
+    email: l.email, mobile: l.mobile, classes: []
+  }))).concat(SCHOOL.nonTeachingStaff.map(n => ({
+    name: n.name, role: n.role, department: n.department, qualification: n.qualification, yearsOfService: n.yearsOfService,
+    email: n.email, mobile: n.mobile, classes: []
+  })));
+
+  const allClasses = Array.from(new Set(staff.flatMap(s=>s.classes))).sort();
+  allClasses.forEach(c => { const o=document.createElement("option"); o.value=c; o.textContent=c; document.getElementById("hClass").appendChild(o); });
+  const allDepts = Array.from(new Set(staff.map(s=>s.department))).sort();
+  allDepts.forEach(d => { const o=document.createElement("option"); o.value=d; o.textContent=d; document.getElementById("hDept").appendChild(o); });
+
+  function serviceBucket(y) { if (y<=2) return "0-2"; if (y<=5) return "3-5"; return "6+"; }
+
+  function renderDirectory() {
+    const q = document.getElementById("hSearch").value.toLowerCase();
+    const cls = document.getElementById("hClass").value;
+    const dept = document.getElementById("hDept").value;
+    const svc = document.getElementById("hService").value;
+    const list = staff.filter(s =>
+      (!q || s.name.toLowerCase().includes(q)) &&
+      (!cls || s.classes.includes(cls)) &&
+      (!dept || s.department === dept) &&
+      (!svc || serviceBucket(s.yearsOfService) === svc)
+    );
+    document.getElementById("hBody").innerHTML = list.map(s => `
+      <tr><td><b>${A.esc(s.name)}</b></td><td>${A.esc(s.role)}</td><td>${A.esc(s.department)}</td><td>${A.esc(s.qualification)}</td>
+      <td>${s.yearsOfService} yr${s.yearsOfService===1?"":"s"}</td><td>${s.email}</td><td>${s.mobile}</td></tr>`).join("");
+  }
+  ["hSearch","hClass","hDept","hService"].forEach(id=>document.getElementById(id).addEventListener("input", renderDirectory));
+
+  function renderApplications() {
+    const q = document.getElementById("appSearch").value.toLowerCase();
+    const status = document.getElementById("appStatus").value;
+    const list = SCHOOL.applications.filter(a => (!q || a.name.toLowerCase().includes(q) || a.role.toLowerCase().includes(q)) && (!status || a.status===status));
+    document.getElementById("appBody").innerHTML = list.map(a => `
+      <tr><td><b>${A.esc(a.name)}</b></td><td>${A.esc(a.role)}</td><td>${a.contact}</td><td style="white-space:normal;max-width:280px">${A.esc(a.bio)}</td>
+      <td><span class="badge ${a.status==='Shortlisted'?'green':a.status==='Under Review'?'yellow':'gray'}">${a.status}</span></td><td>${A.fmtDate(a.date)}</td></tr>`).join("");
+  }
+  ["appSearch","appStatus"].forEach(id=>document.getElementById(id).addEventListener("input", renderApplications));
+
+  renderDirectory(); renderApplications();
+})();
+</script>
+</body>
+</html>

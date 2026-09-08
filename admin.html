@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Learning Roots Royal Academy</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111b52">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="appbar">
+  <div class="appbar-inner">
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+    <div class="brand"><img src="assets/img/logo.png" alt="logo"><div><strong>Learning Roots Royal Academy</strong><small>Admin Portal</small></div></div>
+    <div class="spacer"></div>
+    <div class="role-pill" id="rolePill"></div>
+    <div class="bell" title="Notifications"><span>🔔</span><span class="dot"></span></div>
+    <button class="logout" id="logoutBtn">Sign out</button>
+  </div>
+</div>
+<div class="session-banner"><span id="termPill"></span></div>
+<div class="shell">
+  <div class="side" id="sideNav">
+    <div class="sec-label">Overview</div>
+    <a class="active" data-view-link="v-overview">📊 Dashboard</a>
+    <div class="sec-label">Academics</div>
+    <a data-view-link="v-students">🎓 Student Records</a>
+    <a data-view-link="v-results">📝 Results Review</a>
+    <a data-view-link="v-lessons">📘 Lesson Plans</a>
+    <div class="sec-label">Operations</div>
+    <a data-view-link="v-attendance">🕘 Staff Attendance</a>
+    <a data-view-link="v-payments">💳 Payments</a>
+    <a data-view-link="v-transport">🚌 Transport Overview</a>
+    <a data-view-link="v-discipline">⚠️ Discipline Log</a>
+    <div class="sec-label">Reports & Comms</div>
+    <a data-view-link="v-transcript">🎫 Transcript Generator</a>
+    <a data-view-link="v-announcements">📣 Announcements</a>
+    <a data-view-link="v-calendar">📅 Calendar</a>
+  </div>
+  <div class="main">
+
+    <!-- OVERVIEW -->
+    <div class="view active" id="v-overview">
+      <h1 class="page-title">Welcome back</h1>
+            <div class="stats" id="statsRow"></div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Payment Status Snapshot</h3>
+          <div id="paySnapshot"></div>
+        </div>
+        <div class="card">
+          <h3>Recent Announcements</h3>
+          <div id="recentAnn"></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Lesson Plans Awaiting Review</h3>
+          <div id="pendingLessons"></div>
+        </div>
+        <div class="card">
+          <h3>Staff Lateness This Term</h3>
+          <div id="lateSummary"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENT RECORDS -->
+    <div class="view" id="v-students">
+      <h1 class="page-title">Student Records</h1>
+            <div class="filterbar">
+        <input type="text" id="sSearch" placeholder="Search by name...">
+        <select id="sClass"><option value="">All Classes</option></select>
+        <select id="sGender"><option value="">All Genders</option><option value="M">Male</option><option value="F">Female</option></select>
+        <select id="sHouse"><option value="">All Houses</option></select>
+        <select id="sClub"><option value="">All Clubs</option></select>
+        <select id="sTrack"><option value="">All Tracks</option><option value="Science">Science</option><option value="Commercial">Commercial</option><option value="Arts">Arts</option></select>
+        <select id="sSubject"><option value="">All Subjects</option></select>
+        <select id="sMode"><option value="">Bus / Drop-off</option><option value="Bus">School Bus</option><option value="Dropoff">Drop-off</option></select>
+        <button class="clearbtn" id="sClear">Clear filters</button>
+      </div>
+      <div class="result-count" id="sCount"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Class</th><th>Track</th><th>House</th><th>Club</th><th>Transport</th><th>Fees</th></tr></thead>
+          <tbody id="sBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RESULTS REVIEW -->
+    <div class="view" id="v-results">
+      <h1 class="page-title">Results Review</h1>
+      <div class="filterbar">
+        <select id="rClass"><option value="">All Classes</option></select>
+        <select id="rSubject"><option value="">All Subjects</option></select>
+        <select id="rStatus"><option value="">All Statuses</option><option value="Submitted">Submitted</option><option value="Approved">Approved</option><option value="Draft">Draft</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Class</th><th>Subject</th><th>Total</th><th>Grade</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="rBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LESSON PLANS -->
+    <div class="view" id="v-lessons">
+      <h1 class="page-title">Lesson Plan Review</h1>
+            <div id="lessonList" class="grid2"></div>
+    </div>
+
+    <!-- STAFF ATTENDANCE -->
+    <div class="view" id="v-attendance">
+      <h1 class="page-title">Staff Attendance</h1>
+            <div class="filterbar">
+        <input type="text" id="aSearch" placeholder="Search staff by name...">
+        <select id="aStatus"><option value="">All</option><option value="Late">Has lateness this term</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Staff</th><th>Subject / Role</th><th>Days Late (Term)</th><th>Last Sign-in</th><th></th></tr></thead>
+          <tbody id="attBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="view" id="v-payments">
+      <h1 class="page-title">Payments Overview</h1>
+            <div class="filterbar">
+        <select id="pClass"><option value="">All Classes (school-wide)</option></select>
+      </div>
+      <div class="grid3" id="payAgg" style="margin-bottom:20px"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Class</th><th>Amount Paid</th><th>Amount Due</th><th>Status</th><th>Progress</th></tr></thead>
+          <tbody id="payBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRANSPORT OVERVIEW (read-only for Admin) -->
+    <div class="view" id="v-transport">
+      <h1 class="page-title">Transport Overview</h1>
+            <div class="grid3" id="transOverview"></div>
+    </div>
+
+    <!-- DISCIPLINE LOG -->
+    <div class="view" id="v-discipline">
+      <h1 class="page-title">Discipline / Incident Log</h1>
+            <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Class</th><th>Date</th><th>Category</th><th>Logged By</th><th>Note</th></tr></thead>
+          <tbody id="discBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRANSCRIPT -->
+    <div class="view" id="v-transcript">
+      <h1 class="page-title">Transcript Generator</h1>
+            <div class="filterbar">
+        <input type="text" id="tSearch" placeholder="Search student by name...">
+        <select id="tTerm"></select>
+      </div>
+      <div id="tResults" class="grid3"></div>
+      <div id="transcriptOutput"></div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="view" id="v-announcements">
+      <h1 class="page-title">Announcements</h1>
+            <div class="card">
+        <h3>New Announcement</h3>
+        <div class="field"><label>Title</label><input type="text" id="annTitle" placeholder="e.g. Third Term Fee Reminder"></div>
+        <div class="field"><label>Audience</label>
+          <select id="annAudience">
+            <option>All</option><option>All Parents</option><option>All Staff</option><option>Parents with Outstanding Balance</option>
+          </select>
+        </div>
+        <div class="field"><label>Message</label><input type="text" id="annBody" placeholder="Write the announcement..."></div>
+        <button class="btn navy" id="annSend">Post to Board + Send Email/WhatsApp Blast</button>
+      </div>
+      <h3 style="font-family:Georgia,serif;color:var(--navy);margin:24px 0 10px">Announcement Board</h3>
+      <div id="annBoard" class="cal-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="view" id="v-calendar">
+      <h1 class="page-title">Term Calendar</h1>
+      <p class="page-sub" id="calSub"></p>
+      <div class="cal-list" id="calList"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Student Profile Modal -->
+<div class="modal-backdrop" id="studentModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img id="mAvatar" src="">
+      <div>
+        <h2 id="mName"></h2>
+        <p id="mSub"></p>
+      </div>
+      <button class="modal-close" id="mClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="active" data-mtab="mt-overview">Overview</button>
+        <button data-mtab="mt-academics">Academics</button>
+        <button data-mtab="mt-comments">Comments</button>
+        <button data-mtab="mt-fees">Fees</button>
+        <button data-mtab="mt-discipline">Discipline</button>
+      </div>
+      <div class="mtab active" id="mt-overview"></div>
+      <div class="mtab" id="mt-academics"></div>
+      <div class="mtab" id="mt-comments"></div>
+      <div class="mtab" id="mt-fees"></div>
+      <div class="mtab" id="mt-discipline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Lesson Plan Modal -->
+<div class="modal-backdrop" id="lpModal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head">
+      <div><h2 id="lpTitle"></h2><p id="lpSub"></p></div>
+      <button class="modal-close" id="lpClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="lpContent" style="color:var(--muted);font-size:13.5px"></p>
+      <div id="lpReuseNote"></div>
+      <div class="field"><label>VP Remark</label><textarea id="lpRemark" rows="3" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:10px"></textarea></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn navy" id="lpApprove">Approve</button>
+        <button class="btn outline" id="lpAdjust">Request Adjustment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function(){
+  const A = window.APP, SCHOOL = A.SCHOOL;
+  const session = A.requireRole(["admin"]);
+  if (!session) return;
+  A.wireChrome(session);
+
+  const students = SCHOOL.students;
+  const teachers = SCHOOL.teachers;
+
+  // ---- populate filter dropdowns ----
+  function fillOptions(sel, values) { values.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); }); }
+  fillOptions(document.getElementById("sClass"), SCHOOL.classes);
+  fillOptions(document.getElementById("sHouse"), SCHOOL.houses.map(h => h.name));
+  fillOptions(document.getElementById("sClub"), SCHOOL.clubs);
+  const allSubjects = Array.from(new Set(students.flatMap(s => s.subjects))).sort();
+  fillOptions(document.getElementById("sSubject"), allSubjects);
+  fillOptions(document.getElementById("rClass"), SCHOOL.classes);
+  fillOptions(document.getElementById("rSubject"), allSubjects);
+  fillOptions(document.getElementById("pClass"), SCHOOL.classes);
+
+  // ---- OVERVIEW ----
+  function renderOverview() {
+    const totalStudents = students.length;
+    const totalTeachers = teachers.length;
+    const paidCount = students.filter(s => s.feeStatus === "Paid").length;
+    const pendingLP = teachers.flatMap(t => t.lessonPlans.map(lp => A.getLessonPlan(lp))).filter(lp => lp.status === "Pending Review" || lp.status === "Needs Adjustment").length;
+    document.getElementById("statsRow").innerHTML = `
+      <div class="stat"><b>${totalStudents}</b><span>Total Students</span></div>
+      <div class="stat"><b>${totalTeachers}</b><span>Teaching Staff</span></div>
+      <div class="stat"><b>${Math.round(paidCount/totalStudents*100)}%</b><span>Fully Paid (School-wide)</span></div>
+      <div class="stat"><b>${pendingLP}</b><span>Lesson Plans Awaiting Review</span></div>`;
+
+    const statuses = ["Paid","Partial","Unpaid"];
+    const counts = statuses.map(st => students.filter(s => s.feeStatus === st).length);
+    document.getElementById("paySnapshot").innerHTML = statuses.map((st,i) => {
+      const pct = Math.round(counts[i]/totalStudents*100);
+      const cls = st==="Paid"?"green":st==="Partial"?"yellow":"red";
+      return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><b>${st}</b><span>${pct}% (${counts[i]} students)</span></div><div class="paybar-track"><span style="width:${pct}%;background:var(--${cls==='green'?'green':cls==='yellow'?'yellow':'red'})"></span></div></div>`;
+    }).join("");
+
+    const anns = A.getAnnouncements().slice(0,3);
+    document.getElementById("recentAnn").innerHTML = anns.map(a => `<div style="margin-bottom:12px"><b style="color:var(--navy);font-size:13.5px">${A.esc(a.title)}</b><p style="margin:2px 0;font-size:12px;color:var(--muted)">${A.fmtDate(a.date)} · ${A.esc(a.audience)}</p><p style="font-size:13px;margin:0">${A.esc(a.body)}</p></div>`).join("");
+
+    const pending = teachers.flatMap(t => t.lessonPlans.map(lp => ({...A.getLessonPlan(lp), teacher: t.name}))).filter(lp => lp.status !== "Approved").slice(0,4);
+    document.getElementById("pendingLessons").innerHTML = pending.length ? pending.map(lp => `<div style="margin-bottom:10px;font-size:13px"><b>${A.esc(lp.teacher)}</b> — ${A.esc(lp.topic)} <span class="badge ${lp.status==='Needs Adjustment'?'red':'yellow'}">${lp.status}</span></div>`).join("") : '<p class="empty-note">All caught up.</p>';
+
+    const lateTeachers = teachers.map(t => ({name:t.name, days: A.getAttendanceLog(t).filter(a=>a.status==="Late").length})).filter(t=>t.days>0).sort((a,b)=>b.days-a.days);
+    document.getElementById("lateSummary").innerHTML = lateTeachers.length ? lateTeachers.map(t => `<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--line)"><span>${A.esc(t.name)}</span><b style="color:var(--navy)">${t.days} day(s)</b></div>`).join("") : '<p class="empty-note">No lateness recorded this term.</p>';
+  }
+
+  // ---- STUDENT RECORDS ----
+  function filteredStudents() {
+    const q = document.getElementById("sSearch").value.toLowerCase();
+    const cls = document.getElementById("sClass").value;
+    const gender = document.getElementById("sGender").value;
+    const house = document.getElementById("sHouse").value;
+    const club = document.getElementById("sClub").value;
+    const track = document.getElementById("sTrack").value;
+    const subject = document.getElementById("sSubject").value;
+    const mode = document.getElementById("sMode").value;
+    return students.filter(s =>
+      (!q || s.name.toLowerCase().includes(q)) &&
+      (!cls || s.class === cls) &&
+      (!gender || s.gender === gender) &&
+      (!house || s.house === house) &&
+      (!club || s.club === club) &&
+      (!track || s.track === track) &&
+      (!subject || s.subjects.includes(subject)) &&
+      (!mode || s.mode === mode)
+    );
+  }
+  function renderStudentTable() {
+    const list = filteredStudents();
+    document.getElementById("sCount").textContent = `${list.length} student${list.length===1?"":"s"} found`;
+    document.getElementById("sBody").innerHTML = list.map(s => `
+      <tr class="clickable" data-open-student="${s.id}">
+        <td class="name-cell"><img class="avatar-sm" src="${A.avatarDataUri(s.name, s.avatarSeed)}"><div><b>${A.esc(s.name)}</b><br><span style="color:var(--muted);font-size:11px">${s.id}</span></div></td>
+        <td>${s.class}</td>
+        <td>${s.track || "—"}</td>
+        <td><span class="house-swatch" style="background:${A.houseColor(s.house)}"></span>${s.house}</td>
+        <td>${A.esc(s.club)}</td>
+        <td>${s.mode === "Bus" ? "🚌 " + A.esc(s.transport.route) : "🚗 Drop-off"}</td>
+        <td>${A.feeBadge(s.feeStatus)}</td>
+      </tr>`).join("");
+    document.querySelectorAll("[data-open-student]").forEach(row => row.addEventListener("click", () => openStudentModal(row.getAttribute("data-open-student"))));
+  }
+  ["sSearch","sClass","sGender","sHouse","sClub","sTrack","sSubject","sMode"].forEach(id => document.getElementById(id).addEventListener("input", renderStudentTable));
+  document.getElementById("sClear").addEventListener("click", () => { ["sSearch"].forEach(id=>document.getElementById(id).value=""); ["sClass","sGender","sHouse","sClub","sTrack","sSubject","sMode"].forEach(id=>document.getElementById(id).value=""); renderStudentTable(); });
+
+  // ---- STUDENT MODAL ----
+  function openStudentModal(id) {
+    const s = students.find(x => x.id === id);
+    document.getElementById("mAvatar").src = A.avatarDataUri(s.name, s.avatarSeed);
+    document.getElementById("mName").textContent = s.name;
+    document.getElementById("mSub").textContent = `${s.id} · ${s.class}${s.track ? " ("+s.track+")" : ""} · ${s.house}`;
+
+    document.getElementById("mt-overview").innerHTML = `
+      <div class="kv">
+        <div><b>Admission No.</b>${s.id}</div>
+        <div><b>Gender</b>${s.gender === "M" ? "Male" : "Female"}</div>
+        <div><b>Class</b>${s.class}${s.track ? " · " + s.track + " Track" : ""}</div>
+        <div><b>Age</b>${s.age}</div>
+        <div><b>House</b><span class="house-swatch" style="background:${A.houseColor(s.house)}"></span>${s.house}</div>
+        <div><b>Club / Society</b>${A.esc(s.club)}</div>
+        <div><b>Class Teacher</b>${A.esc(s.classTeacher)}</div>
+        <div><b>Transport</b>${s.mode === "Bus" ? `School Bus — ${A.esc(s.transport.route)} (${A.esc(s.transport.stop)})` : "Parent Drop-off"}</div>
+        <div><b>Parent / Guardian</b>${A.esc(s.parent.name)}</div>
+        <div><b>Parent Contact</b>${s.parent.mobile}</div>
+      </div>`;
+
+    const subjRows = s.subjects.map(subj => {
+      const sc = A.getScore(s, subj);
+      return `<tr><td>${A.esc(subj)}</td><td>${sc.ca1}</td><td>${sc.ca2}</td><td>${sc.exam}</td><td><b>${sc.total}</b></td><td>${A.gradePill(sc.grade)}</td><td>${sc.status}</td></tr>`;
+    }).join("");
+    document.getElementById("mt-academics").innerHTML = `<div class="table-wrap"><table><thead><tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th><th>Status</th></tr></thead><tbody>${subjRows}</tbody></table></div>`;
+
+    const commentsEl = document.getElementById("mt-comments");
+    commentsEl.innerHTML = `<div id="mCommentThread"></div>`;
+    A.renderCommentThread(document.getElementById("mCommentThread"), A.getStudentComments(s));
+
+    const feeRows = Object.entries(s.fees).map(([k,v]) => `<div class="fee-row"><span>${k}</span><span>${A.money(v.paid)} / ${A.money(v.total)}</span></div>`).join("");
+    document.getElementById("mt-fees").innerHTML = `
+      <div style="margin-bottom:14px">${A.feeBadge(s.feeStatus)} <span style="margin-left:10px;font-size:13px;color:var(--muted)">${A.money(s.grandPaid)} of ${A.money(s.grandTotal)} paid</span></div>
+      ${A.paymentBar(s.fees)}
+      <div style="margin-top:16px">${feeRows}</div>`;
+
+    const discEl = document.getElementById("mt-discipline");
+    if (!s.disciplineLog.length) discEl.innerHTML = '<p class="empty-note">No discipline entries on record.</p>';
+    else discEl.innerHTML = s.disciplineLog.map(d => `<div class="comment"><div class="comment-head"><b class="comment-author">${A.esc(d.category)}</b><span class="comment-time">${A.fmtDate(d.date)}</span></div><div class="comment-text">Logged by ${A.esc(d.loggedBy)}. ${A.esc(d.note)}</div></div>`).join("");
+
+    document.getElementById("studentModal").classList.add("open");
+  }
+  document.getElementById("mClose").addEventListener("click", () => document.getElementById("studentModal").classList.remove("open"));
+  document.querySelectorAll("#studentModal .modal-tabs button").forEach(btn => btn.addEventListener("click", () => {
+    document.querySelectorAll("#studentModal .modal-tabs button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("#studentModal .mtab").forEach(t=>t.classList.remove("active"));
+    document.getElementById(btn.getAttribute("data-mtab")).classList.add("active");
+  }));
+
+  // ---- RESULTS REVIEW ----
+  function renderResults() {
+    const cls = document.getElementById("rClass").value;
+    const subj = document.getElementById("rSubject").value;
+    const status = document.getElementById("rStatus").value;
+    let rows = [];
+    students.forEach(s => {
+      s.subjects.forEach(subject => {
+        if (subj && subject !== subj) return;
+        if (cls && s.class !== cls) return;
+        const sc = A.getScore(s, subject);
+        if (status && sc.status !== status) return;
+        rows.push({s, subject, sc});
+      });
+    });
+    rows = rows.filter(r => r.sc.status !== "Approved" || status === "Approved").slice(0, 200);
+    document.getElementById("rBody").innerHTML = rows.map(({s,subject,sc}) => `
+      <tr>
+        <td>${A.esc(s.name)}</td><td>${s.class}</td><td>${A.esc(subject)}</td><td><b>${sc.total}</b></td><td>${A.gradePill(sc.grade)}</td>
+        <td><span class="badge ${sc.status==='Approved'?'green':sc.status==='Submitted'?'yellow':'gray'}">${sc.status}</span></td>
+        <td>${sc.status !== "Approved" ? `<button class="btn sm navy" data-approve="${s.id}|${subject}">Approve</button>` : "—"}</td>
+      </tr>`).join("") || `<tr><td colspan="7" class="empty-note">No results match this filter.</td></tr>`;
+    document.querySelectorAll("[data-approve]").forEach(btn => btn.addEventListener("click", () => {
+      const [sid, subject] = btn.getAttribute("data-approve").split("|");
+      A.updateScore(sid, subject, { status: "Approved", vpRemark: "Reviewed and approved." });
+      A.toast("Result approved — now visible to parent.");
+      renderResults();
+    }));
+  }
+  ["rClass","rSubject","rStatus"].forEach(id => document.getElementById(id).addEventListener("change", renderResults));
+
+  // ---- LESSON PLANS ----
+  let activePlanRef = null;
+  function renderLessons() {
+    document.getElementById("lessonList").innerHTML = teachers.map(t => {
+      const plans = t.lessonPlans.map(lp => A.getLessonPlan(lp));
+      return `<div class="card">
+        <h3>${A.esc(t.name)} <span style="font-size:12px;color:var(--muted);font-weight:400">— ${A.esc(t.subject)}</span></h3>
+        ${plans.map(lp => `
+          <div style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <b style="font-size:13.5px;color:var(--navy)">${A.esc(lp.topic)}</b>
+              <span class="badge ${lp.status==='Approved'?'green':lp.status==='Needs Adjustment'?'red':'yellow'}">${lp.status}</span>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Class: ${lp.class}${lp.reuseNote ? " · Reused plan" : ""}</p>
+            <button class="btn sm outline" data-open-lp="${lp.id}">Review</button>
+          </div>`).join("")}
+      </div>`;
+    }).join("");
+    document.querySelectorAll("[data-open-lp]").forEach(btn => btn.addEventListener("click", () => openLessonModal(btn.getAttribute("data-open-lp"))));
+  }
+  function findPlan(id) { for (const t of teachers) { const p = t.lessonPlans.find(x=>x.id===id); if (p) return {teacher:t, plan:p}; } return null; }
+  function openLessonModal(id) {
+    const found = findPlan(id);
+    activePlanRef = found;
+    const lp = A.getLessonPlan(found.plan);
+    document.getElementById("lpTitle").textContent = lp.topic;
+    document.getElementById("lpSub").textContent = `${found.teacher.name} · ${lp.class}`;
+    document.getElementById("lpContent").textContent = lp.content;
+    document.getElementById("lpReuseNote").innerHTML = lp.reuseNote ? `<div class="readonly-note">Teacher's note: ${A.esc(lp.reuseNote)}</div>` : "";
+    document.getElementById("lpRemark").value = lp.vpComment || "";
+    document.getElementById("lpModal").classList.add("open");
+  }
+  document.getElementById("lpClose").addEventListener("click", () => document.getElementById("lpModal").classList.remove("open"));
+  document.getElementById("lpApprove").addEventListener("click", () => {
+    A.updateLessonPlan(activePlanRef.plan.id, { status: "Approved", vpComment: document.getElementById("lpRemark").value || "Approved." });
+    A.toast("Lesson plan approved.");
+    document.getElementById("lpModal").classList.remove("open");
+    renderLessons(); renderOverview();
+  });
+  document.getElementById("lpAdjust").addEventListener("click", () => {
+    const remark = document.getElementById("lpRemark").value;
+    if (!remark) { A.toast("Add a remark explaining what needs adjusting."); return; }
+    A.updateLessonPlan(activePlanRef.plan.id, { status: "Needs Adjustment", vpComment: remark });
+    A.toast("Sent back to teacher for adjustment.");
+    document.getElementById("lpModal").classList.remove("open");
+    renderLessons(); renderOverview();
+  });
+
+  // ---- STAFF ATTENDANCE ----
+  function renderAttendance() {
+    const q = document.getElementById("aSearch").value.toLowerCase();
+    const filterLate = document.getElementById("aStatus").value;
+    let list = teachers.filter(t => !q || t.name.toLowerCase().includes(q));
+    document.getElementById("attBody").innerHTML = list.map(t => {
+      const log = A.getAttendanceLog(t);
+      const lateDays = log.filter(a=>a.status==="Late").length;
+      if (filterLate === "Late" && lateDays === 0) return "";
+      const last = log[log.length-1];
+      return `<tr>
+        <td>${A.esc(t.name)}</td><td>${A.esc(t.subject)}${t.isAdminLevel ? " · VP" : ""}</td>
+        <td>${lateDays > 0 ? `<span class="badge yellow">${lateDays} day(s)</span>` : `<span class="badge green">0</span>`}</td>
+        <td>${last ? `${A.fmtDate(last.date)} · ${last.time} ${last.status==='Late' ? '<span class="badge red">Late</span>' : '<span class="badge green">On Time</span>'}` : "—"}</td>
+        <td><button class="btn sm outline" data-view-log="${t.id}">View Log</button></td>
+      </tr>`;
+    }).join("");
+    document.querySelectorAll("[data-view-log]").forEach(btn => btn.addEventListener("click", () => {
+      const t = teachers.find(x=>x.id===btn.getAttribute("data-view-log"));
+      const log = A.getAttendanceLog(t);
+      alert(`${t.name} — Sign-in log (this term):\n\n` + log.map(l => `${A.fmtDate(l.date)}  ${l.time}  ${l.status}${l.note ? " — " + l.note : ""}`).join("\n"));
+    }));
+  }
+  ["aSearch","aStatus"].forEach(id => document.getElementById(id).addEventListener("input", renderAttendance));
+
+  // ---- PAYMENTS ----
+  function renderPayments() {
+    const cls = document.getElementById("pClass").value;
+    const list = cls ? students.filter(s=>s.class===cls) : students;
+    const statuses = ["Paid","Partial","Unpaid"];
+    const counts = statuses.map(st => list.filter(s=>s.feeStatus===st).length);
+    document.getElementById("payAgg").innerHTML = statuses.map((st,i) => {
+      const pct = list.length ? Math.round(counts[i]/list.length*100) : 0;
+      const cls2 = st==="Paid"?"green":st==="Partial"?"yellow":"red";
+      return `<div class="stat"><b class="badge ${cls2}" style="font-size:16px;padding:6px 12px">${pct}%</b><span>${st} (${counts[i]} of ${list.length})</span></div>`;
+    }).join("");
+    document.getElementById("payBody").innerHTML = list.map(s => `
+      <tr class="clickable" data-open-student="${s.id}">
+        <td>${A.esc(s.name)}</td><td>${s.class}</td><td>${A.money(s.grandPaid)}</td><td>${A.money(s.grandTotal - s.grandPaid)}</td>
+        <td>${A.feeBadge(s.feeStatus)}</td><td style="min-width:120px">${A.paymentBar(s.fees)}</td>
+      </tr>`).join("");
+    document.querySelectorAll("#payBody [data-open-student]").forEach(row => row.addEventListener("click", () => {
+      document.querySelector('[data-view-link="v-students"]').click();
+      openStudentModal(row.getAttribute("data-open-student"));
+    }));
+  }
+  document.getElementById("pClass").addEventListener("change", renderPayments);
+
+  // ---- TRANSPORT OVERVIEW ----
+  function renderTransportOverview() {
+    document.getElementById("transOverview").innerHTML = SCHOOL.drivers.map(d => {
+      const riders = students.filter(s => s.mode === "Bus" && s.transport.bus === d.bus);
+      return `<div class="card">
+        <h3>${A.esc(d.bus)}</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 8px">${A.esc(d.route)} · Arrival ${d.arrivalTime}</p>
+        <div class="stat" style="margin-bottom:0"><b>${riders.length}</b><span>Students on this route</span></div>
+      </div>`;
+    }).join("") + `<div class="card"><h3>Drop-off</h3><p style="font-size:12.5px;color:var(--muted);margin:0 0 8px">Parents bring these students directly.</p><div class="stat" style="margin-bottom:0"><b>${students.filter(s=>s.mode==="Dropoff").length}</b><span>Students dropped off</span></div></div>`;
+  }
+
+  // ---- DISCIPLINE LOG ----
+  function renderDiscipline() {
+    const rows = [];
+    students.forEach(s => s.disciplineLog.forEach(d => rows.push({s,d})));
+    document.getElementById("discBody").innerHTML = rows.length ? rows.map(({s,d}) => `
+      <tr class="clickable" data-open-student="${s.id}">
+        <td>${A.esc(s.name)}</td><td>${s.class}</td><td>${A.fmtDate(d.date)}</td><td>${A.esc(d.category)}</td><td>${A.esc(d.loggedBy)}</td><td>${A.esc(d.note)}</td>
+      </tr>`).join("") : `<tr><td colspan="6" class="empty-note">No incidents logged this term.</td></tr>`;
+    document.querySelectorAll("#discBody [data-open-student]").forEach(row => row.addEventListener("click", () => {
+      document.querySelector('[data-view-link="v-students"]').click();
+      openStudentModal(row.getAttribute("data-open-student"));
+    }));
+  }
+
+  // ---- TRANSCRIPT ----
+  fillOptions(document.getElementById("tTerm"), SCHOOL.terms.map(t=>t.name));
+  function renderTranscriptSearch() {
+    const q = document.getElementById("tSearch").value.toLowerCase();
+    if (!q) { document.getElementById("tResults").innerHTML = ""; return; }
+    const matches = students.filter(s => s.name.toLowerCase().includes(q)).slice(0,6);
+    document.getElementById("tResults").innerHTML = matches.map(s => `
+      <div class="card" style="cursor:pointer" data-gen-transcript="${s.id}">
+        <div class="name-cell"><img class="avatar-sm" src="${A.avatarDataUri(s.name,s.avatarSeed)}"><div><b>${A.esc(s.name)}</b><br><span style="font-size:11px;color:var(--muted)">${s.class} · ${s.id}</span></div></div>
+      </div>`).join("");
+    document.querySelectorAll("[data-gen-transcript]").forEach(c => c.addEventListener("click", () => generateTranscript(c.getAttribute("data-gen-transcript"))));
+  }
+  document.getElementById("tSearch").addEventListener("input", renderTranscriptSearch);
+  function generateTranscript(id) {
+    const s = students.find(x=>x.id===id);
+    const rows = s.subjects.map(subj => { const sc = A.getScore(s,subj); return `<tr><td>${A.esc(subj)}</td><td>${sc.ca1}</td><td>${sc.ca2}</td><td>${sc.exam}</td><td><b>${sc.total}</b></td><td>${sc.grade}</td></tr>`; }).join("");
+    document.getElementById("transcriptOutput").innerHTML = `
+      <div class="card" style="margin-top:20px;border:2px solid var(--navy)">
+        <div style="display:flex;align-items:center;gap:16px;border-bottom:2px solid var(--gold);padding-bottom:16px;margin-bottom:16px">
+          <img src="assets/img/logo.png" style="width:64px;height:64px;object-fit:contain">
+          <div><h2 style="margin:0;font-family:Georgia,serif;color:var(--navy)">${SCHOOL.meta.name}</h2><p style="margin:2px 0;font-size:12px;color:var(--muted)">${SCHOOL.meta.address}</p></div>
+          <img src="${A.avatarDataUri(s.name,s.avatarSeed)}" style="margin-left:auto;width:70px;height:70px;border-radius:12px">
+        </div>
+        <h3 style="text-align:center;letter-spacing:.1em;text-transform:uppercase;font-size:14px;color:var(--gold)">Official Academic Transcript</h3>
+        <div class="kv" style="margin:16px 0">
+          <div><b>Student Name</b>${A.esc(s.name)}</div><div><b>Admission No.</b>${s.id}</div>
+          <div><b>Class</b>${s.class}${s.track ? " · "+s.track : ""}</div><div><b>Term</b>${document.getElementById("tTerm").value || SCHOOL.terms.find(t=>t.id===SCHOOL.currentTermId).name}</div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p style="margin-top:16px;font-size:11px;color:var(--muted);text-align:center">Generated via the Learning Roots Royal Academy School Management Portal</p>
+        <div style="text-align:center;margin-top:14px"><button class="btn navy" onclick="window.print()">Print / Save as PDF</button></div>
+      </div>`;
+  }
+
+  // ---- ANNOUNCEMENTS ----
+  function renderAnnouncements() {
+    document.getElementById("annBoard").innerHTML = A.getAnnouncements().map(a => `
+      <div class="cal-item"><div class="cal-date"><b>${new Date(a.date).getDate()}</b><span>${new Date(a.date).toLocaleDateString("en-GB",{month:"short"})}</span></div>
+      <div><h4>${A.esc(a.title)} <span class="badge gray">${A.esc(a.audience)}</span></h4><p>${A.esc(a.body)}</p></div></div>`).join("");
+  }
+  document.getElementById("annSend").addEventListener("click", () => {
+    const title = document.getElementById("annTitle").value.trim();
+    const body = document.getElementById("annBody").value.trim();
+    const audience = document.getElementById("annAudience").value;
+    if (!title || !body) { A.toast("Add a title and message first."); return; }
+    A.addAnnouncement({ date: new Date().toISOString().slice(0,10), title, audience, body });
+    document.getElementById("annTitle").value = ""; document.getElementById("annBody").value = "";
+    A.toast("Posted to board and queued for email/WhatsApp blast to " + audience + ".");
+    renderAnnouncements(); renderOverview();
+  });
+
+  // ---- CALENDAR ----
+  function renderCalendar() {
+    const term = SCHOOL.terms.find(t=>t.id===SCHOOL.currentTermId);
+    document.getElementById("calSub").textContent = `${term.name} — ${A.fmtDate(term.start)} to ${A.fmtDate(term.end)}`;
+    document.getElementById("calList").innerHTML = SCHOOL.calendarEvents.map(ev => {
+      const d = new Date(ev.date);
+      return `<div class="cal-item"><div class="cal-date"><b>${d.getDate()}</b><span>${d.toLocaleDateString("en-GB",{month:"short"})}</span></div>
+        <div><h4>${A.esc(ev.title)} <span class="badge gold">${A.esc(ev.type)}</span></h4><p>${A.esc(ev.desc)}</p></div></div>`;
+    }).join("");
+  }
+
+  renderOverview(); renderStudentTable(); renderResults(); renderLessons(); renderAttendance();
+  renderPayments(); renderTransportOverview(); renderDiscipline(); renderAnnouncements(); renderCalendar();
+})();
+</script>
+</body>
+</html>

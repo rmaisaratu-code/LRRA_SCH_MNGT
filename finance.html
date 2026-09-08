@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Department — Learning Roots Royal Academy</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111b52">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="appbar">
+<div class="appbar-inner">
+<button class="mobile-toggle" id="mobileToggle">☰</button>
+<div class="brand"><img src="assets/img/logo.png" alt="logo"><div><strong>Learning Roots Royal Academy</strong><small>Account / Finance Department</small></div></div>
+<div class="spacer"></div>
+<div class="role-pill" id="rolePill"></div>
+<div class="bell" title="Notifications"><span>🔔</span><span class="dot"></span></div>
+<button class="logout" id="logoutBtn">Sign out</button>
+</div>
+</div>
+<div class="session-banner"><span id="termPill"></span></div>
+<div class="shell">
+<div class="side" id="sideNav">
+<div class="sec-label">Overview</div>
+<a class="active" data-view-link="v-overview">📊 Dashboard</a>
+<div class="sec-label">Money In</div>
+<a data-view-link="v-revenue">💰 Revenue & Fee Payments</a>
+<div class="sec-label">Money Out</div>
+<a data-view-link="v-expenses">🧾 Expenses</a>
+<a data-view-link="v-payroll">🧑‍💼 Payroll</a>
+<a data-view-link="v-tax">🏛️ Tax & Remittance</a>
+</div>
+<div class="main">
+
+<!-- OVERVIEW -->
+<div class="view active" id="v-overview">
+<h1 class="page-title">Financial Overview</h1>
+<div class="stats" id="finStats"></div>
+<div class="grid2">
+<div class="card"><h3>Fee Collection Status (School-wide)</h3><div id="feeDonut"></div></div>
+<div class="card"><h3>Revenue vs Expenses (This Term)</h3><div id="revExpBar"></div></div>
+</div>
+</div>
+
+<!-- REVENUE / FEES -->
+<div class="view" id="v-revenue">
+<h1 class="page-title">Revenue & Fee Payments</h1>
+<div class="filterbar">
+<select id="fvSection"><option value="">All Sections</option></select>
+<select id="fvClass"><option value="">All Classes</option></select>
+<select id="fvStatus"><option value="">All Statuses</option><option>Paid</option><option>Partial</option><option>Unpaid</option></select>
+<select id="fvCategory"><option value="">All Fee Categories (grand total)</option></select>
+<select id="fvTerm"></select>
+<button class="clearbtn" id="fvClear">Clear filters</button>
+</div>
+<div class="result-count" id="fvCount"></div>
+<div class="grid2" style="margin-bottom:16px">
+<div class="card"><h3>Filtered Collection Breakdown</h3><div id="fvDonut"></div></div>
+<div class="card"><h3>Filtered Totals</h3><div id="fvTotals"></div></div>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Student</th><th>Class</th><th>Section</th><th>Amount Paid</th><th>Amount Due</th><th>Status</th><th></th></tr></thead>
+<tbody id="fvBody"></tbody>
+</table>
+</div>
+<div id="receiptOutput"></div>
+</div>
+
+<!-- EXPENSES -->
+<div class="view" id="v-expenses">
+<h1 class="page-title">Expenses</h1>
+<div class="filterbar">
+<select id="exCategory"><option value="">All Categories</option></select>
+<select id="exMonth"><option value="">All Months</option></select>
+<button class="clearbtn" id="exClear">Clear filters</button>
+</div>
+<div class="grid3" id="exAgg" style="margin-bottom:16px"></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead>
+<tbody id="exBody"></tbody>
+</table>
+</div>
+</div>
+
+<!-- PAYROLL -->
+<div class="view" id="v-payroll">
+<h1 class="page-title">Payroll</h1>
+<div class="filterbar">
+<input type="text" id="prSearch" placeholder="Search staff by name...">
+<select id="prDept"><option value="">All Departments</option></select>
+<select id="prService"><option value="">Years of Service</option><option value="0-2">0–2 years</option><option value="3-5">3–5 years</option><option value="6+">6+ years</option></select>
+<button class="clearbtn" id="prClear">Clear filters</button>
+</div>
+<div class="stats" id="prStats"></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Staff</th><th>Department</th><th>Role</th><th>Qualification</th><th>Years of Service</th><th>Monthly Salary</th></tr></thead>
+<tbody id="prBody"></tbody>
+</table>
+</div>
+<div style="text-align:center;margin-top:16px"><button class="btn navy" id="prPrint">Generate Payroll Sheet (Print / PDF)</button></div>
+<div id="payrollSheetOutput"></div>
+</div>
+
+<!-- TAX -->
+<div class="view" id="v-tax">
+<h1 class="page-title">Tax & Statutory Remittance</h1>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Period</th><th>Type</th><th>Amount</th><th>Date Paid</th><th>Status</th></tr></thead>
+<tbody id="taxBody"></tbody>
+</table>
+</div>
+</div>
+
+</div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function(){
+  const A = window.APP, SCHOOL = A.SCHOOL;
+  const session = A.requireRole(["finance"]);
+  if (!session) return;
+  A.wireChrome(session);
+
+  const students = SCHOOL.students;
+  function fillOptions(sel, values) { values.forEach(v => { const o=document.createElement("option"); o.value=v; o.textContent=v; sel.appendChild(o); }); }
+
+  fillOptions(document.getElementById("fvSection"), SCHOOL.sections.map(s=>s.name));
+  fillOptions(document.getElementById("fvClass"), SCHOOL.classes);
+  const allFeeCats = Array.from(new Set(students.flatMap(s=>Object.keys(s.fees))));
+  fillOptions(document.getElementById("fvCategory"), allFeeCats);
+  fillOptions(document.getElementById("fvTerm"), SCHOOL.terms.map(t=>t.name));
+  document.getElementById("fvTerm").value = SCHOOL.terms.find(t=>t.id===SCHOOL.currentTermId).name;
+
+  fillOptions(document.getElementById("prDept"), Array.from(new Set(SCHOOL.payrollStaff.map(p=>p.department))));
+  fillOptions(document.getElementById("exCategory"), Array.from(new Set(SCHOOL.expenses.map(e=>e.category))));
+  fillOptions(document.getElementById("exMonth"), Array.from(new Set(SCHOOL.expenses.map(e=>e.date.slice(0,7)))).sort());
+
+  // ---- OVERVIEW ----
+  function renderOverview() {
+    const totalRevenue = SCHOOL.revenueByMonth.reduce((s,m)=>s+m.amount,0);
+    const totalExpenses = SCHOOL.expenses.reduce((s,e)=>s+e.amount,0);
+    const totalDue = students.reduce((s,st)=>s+(st.grandTotal-st.grandPaid),0);
+    document.getElementById("finStats").innerHTML = `
+      <div class="stat"><b>${A.money(totalRevenue)}</b><span>Total Revenue (Term)</span></div>
+      <div class="stat"><b>${A.money(totalExpenses)}</b><span>Total Expenses (Term)</span></div>
+      <div class="stat"><b>${A.money(totalRevenue-totalExpenses)}</b><span>Net</span></div>
+      <div class="stat"><b>${A.money(totalDue)}</b><span>Fees Outstanding</span></div>`;
+
+    const statuses = ["Paid","Partial","Unpaid"];
+    const colors = {Paid:"#1f8a4c",Partial:"#c8930a",Unpaid:"#c22b3a"};
+    const segs = statuses.map(st => ({ label: st, value: students.filter(s=>s.feeStatus===st).length, color: colors[st] }));
+    A.renderDonutChart(document.getElementById("feeDonut"), segs);
+
+    A.renderBarChart(document.getElementById("revExpBar"), SCHOOL.revenueByMonth.map(m=>m.month), [
+      { name: "Revenue", color: "#2638a5", values: SCHOOL.revenueByMonth.map(m=>m.amount) },
+      { name: "Expenses", color: "#c22b3a", values: SCHOOL.revenueByMonth.map(m => {
+          const mk = m.month; // e.g. "Jan 2026" -> match expense dates by month
+          const monthIdx = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].findIndex(mm=>mk.startsWith(mm));
+          return SCHOOL.expenses.filter(e => new Date(e.date).getMonth()===monthIdx).reduce((s,e)=>s+e.amount,0);
+        }) }
+    ]);
+  }
+
+  // ---- REVENUE / FEES ----
+  function filteredStudentsFin() {
+    const section = document.getElementById("fvSection").value;
+    const cls = document.getElementById("fvClass").value;
+    const status = document.getElementById("fvStatus").value;
+    return students.filter(s =>
+      (!section || SCHOOL.sectionForClass(s.class) === section) &&
+      (!cls || s.class === cls) &&
+      (!status || s.feeStatus === status)
+    );
+  }
+  function renderRevenue() {
+    const cat = document.getElementById("fvCategory").value;
+    const list = filteredStudentsFin();
+    document.getElementById("fvCount").textContent = `${list.length} student${list.length===1?"":"s"} match this filter`;
+
+    const rows = list.map(s => {
+      let paid = s.grandPaid, due = s.grandTotal - s.grandPaid, status = s.feeStatus;
+      if (cat && s.fees[cat]) {
+        paid = s.fees[cat].paid; due = s.fees[cat].total - s.fees[cat].paid;
+        status = due === 0 ? "Paid" : (paid === 0 ? "Unpaid" : "Partial");
+      }
+      return { s, paid, due, status };
+    });
+    document.getElementById("fvBody").innerHTML = rows.map(({s,paid,due,status}) => `
+      <tr><td>${A.esc(s.name)}</td><td>${s.class}</td><td>${A.esc(SCHOOL.sectionForClass(s.class))}</td>
+      <td>${A.money(paid)}</td><td>${A.money(due)}</td><td>${A.feeBadge(status)}</td>
+      <td><button class="btn sm outline" data-receipt="${s.id}">Receipt</button></td></tr>`).join("") ||
+      `<tr><td colspan="7" class="empty-note">No students match this filter.</td></tr>`;
+
+    const statuses = ["Paid","Partial","Unpaid"];
+    const colors = {Paid:"#1f8a4c",Partial:"#c8930a",Unpaid:"#c22b3a"};
+    const segs = statuses.map(st => ({ label: st, value: rows.filter(r=>r.status===st).length, color: colors[st] }));
+    A.renderDonutChart(document.getElementById("fvDonut"), segs);
+
+    const totalPaid = rows.reduce((s,r)=>s+r.paid,0), totalDue = rows.reduce((s,r)=>s+r.due,0);
+    document.getElementById("fvTotals").innerHTML = `
+      <div class="kv"><div><b>Total Collected</b>${A.money(totalPaid)}</div><div><b>Total Outstanding</b>${A.money(totalDue)}</div>
+      <div><b>Collection Rate</b>${totalPaid+totalDue ? Math.round(totalPaid/(totalPaid+totalDue)*100) : 0}%</div></div>`;
+
+    document.querySelectorAll("[data-receipt]").forEach(btn => btn.addEventListener("click", () => generateReceipt(btn.getAttribute("data-receipt"))));
+  }
+  ["fvSection","fvClass","fvStatus","fvCategory"].forEach(id => document.getElementById(id).addEventListener("change", renderRevenue));
+  document.getElementById("fvClear").addEventListener("click", () => { ["fvSection","fvClass","fvStatus","fvCategory"].forEach(id=>document.getElementById(id).value=""); renderRevenue(); });
+
+  function generateReceipt(id) {
+    const s = students.find(x=>x.id===id);
+    const rows = Object.entries(s.fees).map(([k,v]) => `<tr><td>${k}</td><td>${A.money(v.total)}</td><td>${A.money(v.paid)}</td><td>${A.money(v.total-v.paid)}</td></tr>`).join("");
+    document.getElementById("receiptOutput").innerHTML = `
+      <div class="card" style="margin-top:20px;border:2px solid var(--navy)">
+        <div style="display:flex;align-items:center;gap:16px;border-bottom:2px solid var(--gold);padding-bottom:16px;margin-bottom:16px">
+          <img src="assets/img/logo.png" style="width:64px;height:64px;object-fit:contain">
+          <div><h2 style="margin:0;font-family:Georgia,serif;color:var(--navy)">${SCHOOL.meta.name}</h2><p style="margin:2px 0;font-size:12px;color:var(--muted)">${SCHOOL.meta.address}</p></div>
+        </div>
+        <h3 style="text-align:center;letter-spacing:.1em;text-transform:uppercase;font-size:14px;color:var(--gold)">Official Payment Receipt</h3>
+        <div class="kv" style="margin:16px 0">
+          <div><b>Student Name</b>${A.esc(s.name)}</div><div><b>Admission No.</b>${s.id}</div>
+          <div><b>Class</b>${s.class}</div><div><b>Term</b>${SCHOOL.terms.find(t=>t.id===SCHOOL.currentTermId).name}</div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Fee Item</th><th>Total</th><th>Paid</th><th>Balance</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p style="margin-top:16px;font-size:11px;color:var(--muted);text-align:center">Issued by the Account Department — Learning Roots Royal Academy School Management Portal</p>
+        <div style="text-align:center;margin-top:14px"><button class="btn navy" onclick="window.print()">Print / Save as PDF</button></div>
+      </div>`;
+    document.getElementById("receiptOutput").scrollIntoView({behavior:"smooth"});
+  }
+
+  // ---- EXPENSES ----
+  function renderExpenses() {
+    const cat = document.getElementById("exCategory").value;
+    const month = document.getElementById("exMonth").value;
+    const list = SCHOOL.expenses.filter(e => (!cat || e.category===cat) && (!month || e.date.slice(0,7)===month));
+    document.getElementById("exBody").innerHTML = list.map(e => `<tr><td>${A.fmtDate(e.date)}</td><td>${A.esc(e.category)}</td><td>${A.esc(e.description)}</td><td>${A.money(e.amount)}</td></tr>`).join("") ||
+      `<tr><td colspan="4" class="empty-note">No expenses match this filter.</td></tr>`;
+    const total = list.reduce((s,e)=>s+e.amount,0);
+    const byCat = {}; list.forEach(e => byCat[e.category] = (byCat[e.category]||0)+e.amount);
+    const topCat = Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById("exAgg").innerHTML = `
+      <div class="stat"><b>${A.money(total)}</b><span>Total (Filtered)</span></div>
+      <div class="stat"><b>${list.length}</b><span>Entries</span></div>
+      <div class="stat"><b>${topCat ? A.esc(topCat[0]) : "—"}</b><span>Top Category</span></div>`;
+  }
+  ["exCategory","exMonth"].forEach(id => document.getElementById(id).addEventListener("change", renderExpenses));
+  document.getElementById("exClear").addEventListener("click", () => { ["exCategory","exMonth"].forEach(id=>document.getElementById(id).value=""); renderExpenses(); });
+
+  // ---- PAYROLL ----
+  function serviceBucket(y) { if (y<=2) return "0-2"; if (y<=5) return "3-5"; return "6+"; }
+  function filteredPayroll() {
+    const q = document.getElementById("prSearch").value.toLowerCase();
+    const dept = document.getElementById("prDept").value;
+    const svc = document.getElementById("prService").value;
+    return SCHOOL.payrollStaff.filter(p =>
+      (!q || p.name.toLowerCase().includes(q)) &&
+      (!dept || p.department === dept) &&
+      (!svc || serviceBucket(p.yearsOfService) === svc)
+    );
+  }
+  function renderPayroll() {
+    const list = filteredPayroll();
+    document.getElementById("prBody").innerHTML = list.map(p => `
+      <tr><td><b>${A.esc(p.name)}</b></td><td>${A.esc(p.department)}</td><td>${A.esc(p.role)}</td><td>${A.esc(p.qualification)}</td>
+      <td>${p.yearsOfService} yr${p.yearsOfService===1?"":"s"}</td><td>${A.money(p.monthlySalary)}</td></tr>`).join("") ||
+      `<tr><td colspan="6" class="empty-note">No staff match this filter.</td></tr>`;
+    const total = list.reduce((s,p)=>s+p.monthlySalary,0);
+    document.getElementById("prStats").innerHTML = `
+      <div class="stat"><b>${list.length}</b><span>Staff (Filtered)</span></div>
+      <div class="stat"><b>${A.money(total)}</b><span>Total Monthly Payroll (Filtered)</span></div>
+      <div class="stat"><b>${A.money(SCHOOL.totalMonthlyPayroll)}</b><span>Total Monthly Payroll (School-wide)</span></div>`;
+  }
+  ["prSearch","prDept","prService"].forEach(id => document.getElementById(id).addEventListener("input", renderPayroll));
+  document.getElementById("prClear").addEventListener("click", () => { document.getElementById("prSearch").value=""; document.getElementById("prDept").value=""; document.getElementById("prService").value=""; renderPayroll(); });
+
+  document.getElementById("prPrint").addEventListener("click", () => {
+    const list = filteredPayroll();
+    const rows = list.map(p => `<tr><td>${A.esc(p.name)}</td><td>${A.esc(p.department)}</td><td>${A.esc(p.role)}</td><td>${A.money(p.monthlySalary)}</td></tr>`).join("");
+    document.getElementById("payrollSheetOutput").innerHTML = `
+      <div class="card" style="margin-top:20px;border:2px solid var(--navy)">
+        <div style="display:flex;align-items:center;gap:16px;border-bottom:2px solid var(--gold);padding-bottom:16px;margin-bottom:16px">
+          <img src="assets/img/logo.png" style="width:64px;height:64px;object-fit:contain">
+          <div><h2 style="margin:0;font-family:Georgia,serif;color:var(--navy)">${SCHOOL.meta.name}</h2><p style="margin:2px 0;font-size:12px;color:var(--muted)">Payroll Sheet — ${SCHOOL.terms.find(t=>t.id===SCHOOL.currentTermId).name}</p></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Staff</th><th>Department</th><th>Role</th><th>Monthly Salary</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p style="margin-top:12px;font-size:13px;text-align:right"><b>Total: ${A.money(list.reduce((s,p)=>s+p.monthlySalary,0))}</b></p>
+        <div style="text-align:center;margin-top:14px"><button class="btn navy" onclick="window.print()">Print / Save as PDF</button></div>
+      </div>`;
+    document.getElementById("payrollSheetOutput").scrollIntoView({behavior:"smooth"});
+  });
+
+  // ---- TAX ----
+  function renderTax() {
+    document.getElementById("taxBody").innerHTML = SCHOOL.taxRecords.map(t => `
+      <tr><td>${A.esc(t.period)}</td><td>${A.esc(t.type)}</td><td>${A.money(t.amount)}</td>
+      <td>${t.datePaid ? A.fmtDate(t.datePaid) : "—"}</td><td><span class="badge ${t.status==='Remitted'?'green':'yellow'}">${t.status}</span></td></tr>`).join("");
+  }
+
+  renderOverview(); renderRevenue(); renderExpenses(); renderPayroll(); renderTax();
+})();
+</script>
+</body>
+</html>

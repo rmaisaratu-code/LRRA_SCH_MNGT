@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transport Dashboard — Learning Roots Royal Academy</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111b52">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="appbar">
+  <div class="appbar-inner">
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+    <div class="brand"><img src="assets/img/logo.png" alt="logo"><div><strong>Learning Roots Royal Academy</strong><small>Transport Officer Portal</small></div></div>
+    <div class="spacer"></div>
+    <div class="role-pill" id="rolePill"></div>
+    <div class="bell" title="Notifications"><span>🔔</span><span class="dot"></span></div>
+    <button class="logout" id="logoutBtn">Sign out</button>
+  </div>
+</div>
+<div class="session-banner"><span id="termPill"></span></div>
+<div class="shell">
+  <div class="side" id="sideNav">
+    <div class="sec-label">Fleet</div>
+    <a class="active" data-view-link="v-fleet">🚌 Buses & Drivers</a>
+    <a data-view-link="v-riders">🎓 Student Riders</a>
+  </div>
+  <div class="main">
+
+    <div class="view active" id="v-fleet">
+      <h1 class="page-title">Buses & Drivers</h1>
+            <div class="stats" id="fleetStats"></div>
+      <div id="driverCards"></div>
+    </div>
+
+    <div class="view" id="v-riders">
+      <h1 class="page-title">Student Riders by Route</h1>
+            <div class="filterbar">
+        <select id="routeFilter"><option value="">All Routes</option></select>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Student</th><th>Class</th><th>Bus</th><th>Route</th><th>Stop</th></tr></thead><tbody id="riderBody"></tbody></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function(){
+  const A = window.APP, SCHOOL = A.SCHOOL;
+  const session = A.requireRole(["transport"]);
+  if (!session) return;
+  A.wireChrome(session);
+
+  const busRiders = SCHOOL.students.filter(s => s.mode === "Bus");
+  const dropoffCount = SCHOOL.students.length - busRiders.length;
+
+  document.getElementById("fleetStats").innerHTML = `
+    <div class="stat"><b>${SCHOOL.drivers.length}</b><span>Drivers</span></div>
+    <div class="stat"><b>${SCHOOL.drivers.length}</b><span>Buses</span></div>
+    <div class="stat"><b>${busRiders.length}</b><span>Students on School Bus</span></div>
+    <div class="stat"><b>${dropoffCount}</b><span>Students Dropped Off</span></div>`;
+
+  function renderDrivers() {
+    document.getElementById("driverCards").innerHTML = SCHOOL.drivers.map(d => {
+      const riders = SCHOOL.students.filter(s => s.mode==="Bus" && s.transport.bus===d.bus).length;
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div>
+            <h3 style="margin-bottom:2px">${A.esc(d.name)} — ${A.esc(d.bus)}</h3>
+            <p style="margin:0;font-size:12.5px;color:var(--muted)">${A.esc(d.route)} · Arrival ${d.arrivalTime} · ${d.mobile}</p>
+            <p style="margin:2px 0 0;font-size:12.5px;color:var(--muted)">Stops: ${d.stops.join(", ")} · ${riders} student(s) on this bus</p>
+          </div>
+        </div>
+        <div id="dcomments-${d.id}" style="margin-top:12px"></div>
+        <div class="comment-add"><input type="text" id="dnew-${d.id}" placeholder="Log a timing note or incident..."><button class="btn navy sm" data-add-driver-comment="${d.id}">Log</button></div>
+      </div>`;
+    }).join("");
+    SCHOOL.drivers.forEach(d => A.renderCommentThread(document.getElementById(`dcomments-${d.id}`), A.getDriverComments(d)));
+    document.querySelectorAll("[data-add-driver-comment]").forEach(btn => btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-add-driver-comment");
+      const input = document.getElementById(`dnew-${id}`);
+      const text = input.value.trim();
+      if (!text) return;
+      A.addDriverComment(id, { author: SCHOOL.leadershipStaff.find(l=>l.role==="Transport Officer").name, role: "Transport Officer", text, timestamp: A.nowIso() });
+      input.value = "";
+      const d = SCHOOL.drivers.find(x=>x.id===id);
+      A.renderCommentThread(document.getElementById(`dcomments-${id}`), A.getDriverComments(d));
+      A.toast("Logged.");
+    }));
+  }
+
+  function renderRiders() {
+    const routes = Array.from(new Set(SCHOOL.drivers.map(d=>d.route)));
+    const sel = document.getElementById("routeFilter");
+    routes.forEach(r => { const o=document.createElement("option"); o.value=r; o.textContent=r; sel.appendChild(o); });
+    function draw() {
+      const filter = sel.value;
+      const list = busRiders.filter(s => !filter || s.transport.route === filter);
+      document.getElementById("riderBody").innerHTML = list.map(s => `<tr><td>${A.esc(s.name)}</td><td>${s.class}</td><td>${A.esc(s.transport.bus)}</td><td>${A.esc(s.transport.route)}</td><td>${A.esc(s.transport.stop)}</td></tr>`).join("");
+    }
+    sel.addEventListener("change", draw);
+    draw();
+  }
+
+  renderDrivers(); renderRiders();
+})();
+</script>
+</body>
+</html>

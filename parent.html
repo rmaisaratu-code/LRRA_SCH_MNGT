@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent Dashboard — Learning Roots Royal Academy</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111b52">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="appbar">
+  <div class="appbar-inner">
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+    <div class="brand"><img src="assets/img/logo.png" alt="logo"><div><strong>Learning Roots Royal Academy</strong><small>Parent Portal</small></div></div>
+    <div class="spacer"></div>
+    <div class="role-pill" id="rolePill"></div>
+    <div class="bell" title="Notifications"><span>🔔</span><span class="dot"></span></div>
+    <button class="logout" id="logoutBtn">Sign out</button>
+  </div>
+</div>
+<div class="session-banner"><span id="termPill"></span></div>
+<div class="shell">
+  <div class="side" id="sideNav">
+    <div class="sec-label">My Child</div>
+    <a class="active" data-view-link="v-overview">📊 Overview</a>
+    <a data-view-link="v-academics">📝 Academic Results</a>
+    <a data-view-link="v-house">🏅 House & Club</a>
+    <a data-view-link="v-payments">💳 Payment Status</a>
+    <a data-view-link="v-discipline">⚠️ Discipline Notes</a>
+    <div class="sec-label">School</div>
+    <a data-view-link="v-calendar">📅 Calendar</a>
+    <a data-view-link="v-announcements">📣 Announcements</a>
+    <a data-view-link="v-comments">💬 Comments</a>
+  </div>
+  <div class="main">
+
+    <div class="view active" id="v-overview">
+      <h1 class="page-title" id="pGreeting"></h1>
+            <div class="card" style="display:flex;gap:20px;align-items:center">
+        <img id="childAvatar" src="" style="width:84px;height:84px;border-radius:18px;object-fit:cover">
+        <div>
+          <h2 id="childName" style="margin:0 0 4px;font-family:Georgia,serif;color:var(--navy)"></h2>
+          <p id="childMeta" style="margin:0;color:var(--muted);font-size:13px"></p>
+        </div>
+      </div>
+      <div class="stats" id="pStats"></div>
+      <div class="grid2">
+        <div class="card"><h3>Today</h3><div id="todayCard"></div></div>
+        <div class="card"><h3>House & Club</h3><div id="houseClubCard"></div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-academics">
+      <h1 class="page-title">Academic Results</h1>
+            <div class="table-wrap">
+        <table><thead><tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th><th>Remark</th></tr></thead><tbody id="acadBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="view" id="v-house">
+      <h1 class="page-title">House & Club</h1>
+      <div class="card" id="houseDetail"></div>
+    </div>
+
+    <div class="view" id="v-payments">
+      <h1 class="page-title">Payment Status</h1>
+            <div class="card">
+        <div id="payStatusBadge" style="margin-bottom:14px"></div>
+        <div id="payBarWrap"></div>
+        <div id="payRows" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-discipline">
+      <h1 class="page-title">Discipline Notes</h1>
+            <div id="discCard"></div>
+    </div>
+
+    <div class="view" id="v-calendar">
+      <h1 class="page-title">Term Calendar</h1>
+      <div class="cal-list" id="pCalList"></div>
+    </div>
+
+    <div class="view" id="v-announcements">
+      <h1 class="page-title">Announcements</h1>
+      <div class="cal-list" id="pAnnList"></div>
+    </div>
+
+    <div class="view" id="v-comments">
+      <h1 class="page-title">Comments</h1>
+            <div id="pCommentThread"></div>
+      <div class="comment-add"><input type="text" id="pNewComment" placeholder="Add a comment..."><button class="btn navy sm" id="pAddComment">Post</button></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function(){
+  const A = window.APP, SCHOOL = A.SCHOOL;
+  const session = A.requireRole(["parent"]);
+  if (!session) return;
+  A.wireChrome(session);
+
+  const child = SCHOOL.students.find(s => s.id === session.refId);
+  document.getElementById("pGreeting").textContent = `Welcome, ${child.parent.name}`;
+  document.getElementById("childAvatar").src = A.avatarDataUri(child.name, child.avatarSeed);
+  document.getElementById("childName").textContent = child.name;
+  document.getElementById("childMeta").textContent = `${child.id} · ${child.class}${child.track ? " · "+child.track+" Track" : ""} · Class Teacher: ${child.classTeacher}`;
+
+  // ---- Overview ----
+  const approvedScores = child.subjects.map(subj => A.getScore(child, subj)).filter(sc => sc.status === "Approved");
+  const avgTotal = approvedScores.length ? Math.round(approvedScores.reduce((s,sc)=>s+sc.total,0)/approvedScores.length) : null;
+  document.getElementById("pStats").innerHTML = `
+    <div class="stat"><b>${avgTotal!=null?avgTotal:"—"}</b><span>Average Score (Approved)</span></div>
+    <div class="stat"><b>${child.house}</b><span>House</span></div>
+    <div class="stat"><b>${A.feeBadge(child.feeStatus)}</b><span>Fee Status</span></div>
+    <div class="stat"><b>${child.mode==="Bus"?"School Bus":"Drop-off"}</b><span>Transport</span></div>`;
+
+  document.getElementById("todayCard").innerHTML = `
+    <p style="font-size:13.5px">Today, <b>${child.name}</b> attends regular classes in <b>${child.class}</b>${child.track?" ("+child.track+" track)":""}, with ${child.mode==="Bus" ? "school bus transport on the " + A.esc(child.transport.route) + " route." : "drop-off arranged by the family."}</p>
+    <p style="font-size:12.5px;color:var(--muted)">Class Teacher: ${A.esc(child.classTeacher)}</p>`;
+  document.getElementById("houseClubCard").innerHTML = `
+    <p style="font-size:13.5px"><span class="house-swatch" style="background:${A.houseColor(child.house)}"></span><b>${child.house}</b></p>
+    <p style="font-size:13.5px">Club/Society: <b>${A.esc(child.club)}</b></p>`;
+
+  // ---- Academics ----
+  document.getElementById("acadBody").innerHTML = child.subjects.map(subj => {
+    const sc = A.getScore(child, subj);
+    if (sc.status !== "Approved") return `<tr><td>${A.esc(subj)}</td><td colspan="5" class="empty-note">Awaiting teacher/admin review</td></tr>`;
+    return `<tr><td>${A.esc(subj)}</td><td>${sc.ca1}</td><td>${sc.ca2}</td><td>${sc.exam}</td><td><b>${sc.total}</b></td><td>${A.gradePill(sc.grade)}</td><td>${sc.vpRemark ? A.esc(sc.vpRemark) : "—"}</td></tr>`;
+  }).join("");
+
+  // ---- House/Club ----
+  document.getElementById("houseDetail").innerHTML = `
+    <div class="kv">
+      <div><b>House</b><span class="house-swatch" style="background:${A.houseColor(child.house)}"></span>${child.house}</div>
+      <div><b>Club / Society</b>${A.esc(child.club)}</div>
+    </div>
+    <p style="margin-top:16px;font-size:13px;color:var(--muted)">Houses compete throughout the term in music & dancing, sports, and debate — check the Calendar for dates.</p>`;
+
+  // ---- Payments ----
+  document.getElementById("payStatusBadge").innerHTML = A.feeBadge(child.feeStatus) + ` <span style="margin-left:10px;font-size:13px;color:var(--muted)">${A.money(child.grandPaid)} of ${A.money(child.grandTotal)} paid</span>`;
+  document.getElementById("payBarWrap").innerHTML = A.paymentBar(child.fees);
+  document.getElementById("payRows").innerHTML = Object.entries(child.fees).map(([k,v]) => `<div class="fee-row"><span>${k}</span><span>${A.money(v.paid)} / ${A.money(v.total)}</span></div>`).join("");
+
+  // ---- Discipline ----
+  document.getElementById("discCard").innerHTML = child.disciplineLog.length
+    ? child.disciplineLog.map(d => `<div class="card"><b style="color:var(--navy)">${A.esc(d.category)}</b><p style="font-size:12px;color:var(--muted);margin:2px 0 8px">${A.fmtDate(d.date)} · Logged by ${A.esc(d.loggedBy)}</p><p style="margin:0;font-size:13.5px">${A.esc(d.note)}</p></div>`).join("")
+    : '<p class="empty-note">No discipline entries on record — nothing to see here.</p>';
+
+  // ---- Calendar / announcements ----
+  document.getElementById("pCalList").innerHTML = SCHOOL.calendarEvents.map(ev => { const d=new Date(ev.date); return `<div class="cal-item"><div class="cal-date"><b>${d.getDate()}</b><span>${d.toLocaleDateString("en-GB",{month:"short"})}</span></div><div><h4>${A.esc(ev.title)} <span class="badge gold">${A.esc(ev.type)}</span></h4><p>${A.esc(ev.desc)}</p></div></div>`; }).join("");
+  document.getElementById("pAnnList").innerHTML = A.getAnnouncements().map(a => `<div class="cal-item"><div class="cal-date"><b>${new Date(a.date).getDate()}</b><span>${new Date(a.date).toLocaleDateString("en-GB",{month:"short"})}</span></div><div><h4>${A.esc(a.title)}</h4><p>${A.esc(a.body)}</p></div></div>`).join("");
+
+  // ---- Comments ----
+  function renderComments() { A.renderCommentThread(document.getElementById("pCommentThread"), A.getStudentComments(child)); }
+  document.getElementById("pAddComment").addEventListener("click", () => {
+    const text = document.getElementById("pNewComment").value.trim();
+    if (!text) return;
+    A.addStudentComment(child.id, { author: child.parent.name, role: "Parent", text, timestamp: A.nowIso() });
+    document.getElementById("pNewComment").value = "";
+    renderComments();
+    A.toast("Comment posted.");
+  });
+  renderComments();
+})();
+</script>
+</body>
+</html>

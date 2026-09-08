@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard — Learning Roots Royal Academy</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111b52">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="appbar">
+  <div class="appbar-inner">
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+    <div class="brand"><img src="assets/img/logo.png" alt="logo"><div><strong>Learning Roots Royal Academy</strong><small>Teacher Portal</small></div></div>
+    <div class="spacer"></div>
+    <div class="role-pill" id="rolePill"></div>
+    <div class="bell" title="Notifications"><span>🔔</span><span class="dot"></span></div>
+    <button class="logout" id="logoutBtn">Sign out</button>
+  </div>
+</div>
+<div class="session-banner"><span id="termPill"></span></div>
+<div class="shell">
+  <div class="side" id="sideNav">
+    <div class="sec-label">Overview</div>
+    <a class="active" data-view-link="v-overview">📊 Dashboard</a>
+    <div class="sec-label">Teaching</div>
+    <a data-view-link="v-students">🎓 My Students</a>
+    <a data-view-link="v-scores">📝 Enter Scores</a>
+    <a data-view-link="v-assignments">📎 Assignments</a>
+    <a data-view-link="v-scheme">📘 Scheme of Work & Curriculum</a>
+    <a data-view-link="v-lessons">🗂️ Lesson Plans</a>
+    <div class="sec-label">My Day</div>
+    <a data-view-link="v-timetable">🕘 My Timetable</a>
+    <a data-view-link="v-attendance">✅ Sign In</a>
+    <a data-view-link="v-calendar">📅 Calendar</a>
+    <div class="sec-label">Feedback</div>
+    <a data-view-link="v-comments">💬 Comments About Me</a>
+  </div>
+  <div class="main">
+
+    <div class="view active" id="v-overview">
+      <h1 class="page-title" id="teacherGreeting"></h1>
+      <p class="page-sub" id="teacherSub"></p>
+      <div class="stats" id="tStats"></div>
+      <div class="grid2">
+        <div class="card"><h3>Pending Actions</h3><div id="tPending"></div></div>
+        <div class="card"><h3>My Lesson Plan Status</h3><div id="tPlanStatus"></div></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-students">
+      <h1 class="page-title">My Students</h1>
+            <div class="filterbar">
+        <input type="text" id="stSearch" placeholder="Search by name...">
+        <select id="stClass"></select>
+        <select id="stHouse"><option value="">All Houses</option></select>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Student</th><th>Class</th><th>House</th><th>Club</th><th></th></tr></thead><tbody id="stBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="view" id="v-scores">
+      <h1 class="page-title">Enter / Edit Scores</h1>
+            <div class="filterbar">
+        <select id="scClass"></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>CA1 (20)</th><th>CA2 (20)</th><th>Exam (60)</th><th>Total</th><th>Grade</th><th>Status</th><th></th></tr></thead>
+          <tbody id="scBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="view" id="v-assignments">
+      <h1 class="page-title">Assignments</h1>
+            <div class="card">
+        <h3>New Assignment</h3>
+        <div class="field"><label>Class</label><select id="asgClass"></select></div>
+        <div class="field"><label>Title</label><input type="text" id="asgTitle" placeholder="e.g. Chapter 4 Exercises"></div>
+        <div class="field"><label>Due date</label><input type="date" id="asgDue"></div>
+        <button class="btn navy" id="asgSave">Post Assignment</button>
+      </div>
+      <div id="asgList"></div>
+    </div>
+
+    <div class="view" id="v-scheme">
+      <h1 class="page-title">Scheme of Work & Curriculum</h1>
+            <div class="grid2">
+        <div class="card"><h3>Scheme of Work</h3><p class="empty-note" id="schemeNote"></p><textarea rows="6" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px" placeholder="Outline weekly topics here..."></textarea></div>
+        <div class="card"><h3>Curriculum Reference</h3><p class="empty-note" id="curricNote"></p></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-lessons">
+      <h1 class="page-title">Lesson Plans</h1>
+            <div id="lpTeacherList"></div>
+    </div>
+
+    <div class="view" id="v-timetable">
+      <h1 class="page-title">My Timetable</h1>
+            <div class="table-wrap" id="timetableTable"></div>
+    </div>
+
+    <div class="view" id="v-attendance">
+      <h1 class="page-title">Daily Sign-In</h1>
+            <div class="card" style="max-width:480px">
+        <h3>Today</h3>
+        <p id="attToday" style="font-size:14px"></p>
+        <button class="btn navy" id="signInBtn">Sign In Now</button>
+      </div>
+      <div class="card">
+        <h3>My Sign-in History (This Term)</h3>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody id="myAttBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="view" id="v-calendar">
+      <h1 class="page-title">Term Calendar</h1>
+      <div class="cal-list" id="tCalList"></div>
+    </div>
+
+    <div class="view" id="v-comments">
+      <h1 class="page-title">Comments About Me</h1>
+            <div id="myComments"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-backdrop" id="studentModal">
+  <div class="modal">
+    <div class="modal-head"><img id="mAvatar" src=""><div><h2 id="mName"></h2><p id="mSub"></p></div><button class="modal-close" id="mClose">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-tabs"><button class="active" data-mtab="mt-overview">Overview</button><button data-mtab="mt-academics">Academics</button><button data-mtab="mt-comments">Comments</button></div>
+      <div class="mtab active" id="mt-overview"></div>
+      <div class="mtab" id="mt-academics"></div>
+      <div class="mtab" id="mt-comments">
+        <div id="mCommentThread"></div>
+        <div class="comment-add"><input type="text" id="mNewComment" placeholder="Add a comment..."><button class="btn navy sm" id="mAddComment">Post</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function(){
+  const A = window.APP, SCHOOL = A.SCHOOL;
+  const session = A.requireRole(["teacher"]);
+  if (!session) return;
+  A.wireChrome(session);
+
+  const teacher = SCHOOL.teachers.find(t => t.id === session.refId);
+  const myStudents = SCHOOL.students.filter(s => teacher.classes.includes(s.class));
+
+  document.getElementById("teacherGreeting").textContent = `Welcome, ${teacher.name}`;
+  document.getElementById("teacherSub").textContent = `${teacher.subject} · Classes: ${teacher.classes.join(", ")}${teacher.formClass ? " · Form Teacher: " + teacher.formClass : ""}`;
+
+  function fillOptions(sel, values, withAll) {
+    sel.innerHTML = (withAll ? '<option value="">All My Classes</option>' : "");
+    values.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); });
+  }
+  fillOptions(document.getElementById("stClass"), teacher.classes, true);
+  fillOptions(document.getElementById("scClass"), teacher.classes, false);
+  fillOptions(document.getElementById("asgClass"), teacher.classes, false);
+  const houseSet = Array.from(new Set(myStudents.map(s=>s.house)));
+  fillOptions(document.getElementById("stHouse"), houseSet, true);
+
+  // ---- Overview ----
+  function renderOverview() {
+    const plans = teacher.lessonPlans.map(lp => A.getLessonPlan(lp));
+    const pendingScores = myStudents.reduce((n,s) => n + s.subjects.filter(sub => sub===teacher.subject && A.getScore(s,sub).status==="Draft").length, 0);
+    document.getElementById("tStats").innerHTML = `
+      <div class="stat"><b>${myStudents.length}</b><span>My Students</span></div>
+      <div class="stat"><b>${teacher.classes.length}</b><span>Classes Taught</span></div>
+      <div class="stat"><b>${plans.filter(p=>p.status!=='Approved').length}</b><span>Lesson Plans Pending</span></div>
+      <div class="stat"><b>${teacher.daysLateThisTerm}</b><span>My Late Sign-ins (Term)</span></div>`;
+    document.getElementById("tPending").innerHTML = pendingScores > 0
+      ? `<p style="font-size:13px">You have <b>${pendingScores}</b> ungraded ${teacher.subject} entries. <a href="#" data-goto-scores style="color:var(--blue);font-weight:700">Go to Scores →</a></p>`
+      : '<p class="empty-note">No pending score entries.</p>';
+    document.getElementById("tPlanStatus").innerHTML = plans.map(p => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px"><span>${A.esc(p.topic)}</span><span class="badge ${p.status==='Approved'?'green':p.status==='Needs Adjustment'?'red':'yellow'}">${p.status}</span></div>`).join("");
+    document.querySelectorAll("[data-goto-scores]").forEach(l=>l.addEventListener("click", (e)=>{e.preventDefault(); document.querySelector('.side [data-view-link="v-scores"]').click();}));
+  }
+
+  // ---- My Students ----
+  function renderStudents() {
+    const q = document.getElementById("stSearch").value.toLowerCase();
+    const cls = document.getElementById("stClass").value;
+    const house = document.getElementById("stHouse").value;
+    const list = myStudents.filter(s => (!q||s.name.toLowerCase().includes(q)) && (!cls||s.class===cls) && (!house||s.house===house));
+    document.getElementById("stBody").innerHTML = list.map(s => `
+      <tr><td class="name-cell"><img class="avatar-sm" src="${A.avatarDataUri(s.name,s.avatarSeed)}"><b>${A.esc(s.name)}</b></td><td>${s.class}</td>
+      <td><span class="house-swatch" style="background:${A.houseColor(s.house)}"></span>${s.house}</td><td>${A.esc(s.club)}</td>
+      <td><button class="btn sm outline" data-open="${s.id}">View</button></td></tr>`).join("");
+    document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click", ()=>openStudentModal(b.getAttribute("data-open"))));
+  }
+  ["stSearch","stClass","stHouse"].forEach(id=>document.getElementById(id).addEventListener("input", renderStudents));
+
+  function openStudentModal(id) {
+    const s = SCHOOL.students.find(x=>x.id===id);
+    document.getElementById("mAvatar").src = A.avatarDataUri(s.name,s.avatarSeed);
+    document.getElementById("mName").textContent = s.name;
+    document.getElementById("mSub").textContent = `${s.id} · ${s.class} · ${s.house}`;
+    document.getElementById("mt-overview").innerHTML = `<div class="kv">
+      <div><b>Gender</b>${s.gender==="M"?"Male":"Female"}</div><div><b>Club</b>${A.esc(s.club)}</div>
+      <div><b>House</b>${A.esc(s.house)}</div><div><b>Transport</b>${s.mode==="Bus"?"School Bus":"Drop-off"}</div></div>`;
+    const rows = s.subjects.filter(sub=>sub===teacher.subject || teacher.classes.includes(s.class)).map(subj => { const sc=A.getScore(s,subj); return `<tr><td>${A.esc(subj)}</td><td>${sc.ca1}</td><td>${sc.ca2}</td><td>${sc.exam}</td><td><b>${sc.total}</b></td><td>${A.gradePill(sc.grade)}</td></tr>`; }).join("");
+    document.getElementById("mt-academics").innerHTML = `<div class="table-wrap"><table><thead><tr><th>Subject</th><th>CA1</th><th>CA2</th><th>Exam</th><th>Total</th><th>Grade</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    A.renderCommentThread(document.getElementById("mCommentThread"), A.getStudentComments(s));
+    document.getElementById("mAddComment").onclick = () => {
+      const text = document.getElementById("mNewComment").value.trim();
+      if (!text) return;
+      A.addStudentComment(s.id, { author: teacher.name, role: "Teacher", text, timestamp: A.nowIso() });
+      document.getElementById("mNewComment").value = "";
+      A.renderCommentThread(document.getElementById("mCommentThread"), A.getStudentComments(s));
+      A.toast("Comment posted.");
+    };
+    document.getElementById("studentModal").classList.add("open");
+  }
+  document.getElementById("mClose").addEventListener("click", ()=>document.getElementById("studentModal").classList.remove("open"));
+  document.querySelectorAll("#studentModal .modal-tabs button").forEach(btn=>btn.addEventListener("click", ()=>{
+    document.querySelectorAll("#studentModal .modal-tabs button").forEach(b=>b.classList.remove("active")); btn.classList.add("active");
+    document.querySelectorAll("#studentModal .mtab").forEach(t=>t.classList.remove("active"));
+    document.getElementById(btn.getAttribute("data-mtab")).classList.add("active");
+  }));
+
+  // ---- Scores entry ----
+  function renderScores() {
+    const cls = document.getElementById("scClass").value || teacher.classes[0];
+    document.getElementById("scClass").value = cls;
+    const list = myStudents.filter(s => s.class === cls && s.subjects.includes(teacher.subject));
+    document.getElementById("scBody").innerHTML = list.map(s => {
+      const sc = A.getScore(s, teacher.subject);
+      return `<tr data-row="${s.id}">
+        <td>${A.esc(s.name)}</td>
+        <td><input type="number" min="0" max="20" value="${sc.ca1}" class="sc-input" data-field="ca1" style="width:56px"></td>
+        <td><input type="number" min="0" max="20" value="${sc.ca2}" class="sc-input" data-field="ca2" style="width:56px"></td>
+        <td><input type="number" min="0" max="60" value="${sc.exam}" class="sc-input" data-field="exam" style="width:56px"></td>
+        <td class="sc-total"><b>${sc.total}</b></td><td class="sc-grade">${A.gradePill(sc.grade)}</td>
+        <td><span class="badge ${sc.status==='Approved'?'green':sc.status==='Submitted'?'yellow':'gray'}">${sc.status}</span></td>
+        <td><button class="btn sm navy" data-submit="${s.id}">Save & Submit</button></td>
+      </tr>`;
+    }).join("");
+    document.querySelectorAll(".sc-input").forEach(inp => inp.addEventListener("input", (e)=>{
+      const row = e.target.closest("tr");
+      const ca1 = Number(row.querySelector('[data-field=ca1]').value)||0;
+      const ca2 = Number(row.querySelector('[data-field=ca2]').value)||0;
+      const exam = Number(row.querySelector('[data-field=exam]').value)||0;
+      const total = Math.min(100, ca1+ca2+exam);
+      const grade = SCHOOL.gradeFor(total);
+      row.querySelector(".sc-total b").textContent = total;
+      row.querySelector(".sc-grade").innerHTML = A.gradePill(grade);
+    }));
+    document.querySelectorAll("[data-submit]").forEach(btn => btn.addEventListener("click", ()=>{
+      const row = btn.closest("tr");
+      const sid = btn.getAttribute("data-submit");
+      const ca1 = Number(row.querySelector('[data-field=ca1]').value)||0;
+      const ca2 = Number(row.querySelector('[data-field=ca2]').value)||0;
+      const exam = Number(row.querySelector('[data-field=exam]').value)||0;
+      const total = Math.min(100, ca1+ca2+exam);
+      const grade = SCHOOL.gradeFor(total);
+      A.updateScore(sid, teacher.subject, { ca1, ca2, exam, total, grade, status: "Submitted" });
+      A.toast("Score saved and submitted for review.");
+      renderScores();
+    }));
+  }
+  document.getElementById("scClass").addEventListener("change", renderScores);
+
+  // ---- Assignments (localStorage-backed, simple) ----
+  const ASG_KEY = "lrra_sms_assignments_" + teacher.id;
+  function loadAsg(){ try{return JSON.parse(localStorage.getItem(ASG_KEY))||[];}catch(e){return [];} }
+  function saveAsg(a){ localStorage.setItem(ASG_KEY, JSON.stringify(a)); }
+  function renderAssignments() {
+    const list = loadAsg();
+    document.getElementById("asgList").innerHTML = list.length ? list.map(a => `<div class="card"><h3 style="margin-bottom:4px">${A.esc(a.title)}</h3><p style="margin:0;font-size:12.5px;color:var(--muted)">${a.cls} · Due ${A.fmtDate(a.due)}</p></div>`).join("") : '<p class="empty-note">No assignments posted yet.</p>';
+  }
+  document.getElementById("asgSave").addEventListener("click", () => {
+    const cls = document.getElementById("asgClass").value, title = document.getElementById("asgTitle").value.trim(), due = document.getElementById("asgDue").value;
+    if (!title || !due) { A.toast("Add a title and due date."); return; }
+    const list = loadAsg(); list.unshift({cls,title,due}); saveAsg(list);
+    document.getElementById("asgTitle").value = ""; document.getElementById("asgDue").value = "";
+    A.toast("Assignment posted."); renderAssignments();
+  });
+
+  // ---- Scheme / Curriculum ----
+  document.getElementById("schemeNote").textContent = teacher.schemeOfWork.note;
+  document.getElementById("curricNote").textContent = teacher.curriculum.note + " (" + teacher.curriculum.status + ")";
+
+  // ---- Lesson plans ----
+  function renderLessonPlans() {
+    document.getElementById("lpTeacherList").innerHTML = teacher.lessonPlans.map(lpBase => {
+      const lp = A.getLessonPlan(lpBase);
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0">${A.esc(lp.topic)}</h3>
+          <span class="badge ${lp.status==='Approved'?'green':lp.status==='Needs Adjustment'?'red':'yellow'}">${lp.status}</span>
+        </div>
+        <p style="font-size:12.5px;color:var(--muted)">Class: ${lp.class}</p>
+        <p style="font-size:13px">${A.esc(lp.content)}</p>
+        ${lp.reuseNote ? `<div class="readonly-note">Reuse note: ${A.esc(lp.reuseNote)}</div>` : ""}
+        ${lp.vpComment ? `<div class="comment"><b class="comment-author">VP Remark</b><div class="comment-text">${A.esc(lp.vpComment)}</div></div>` : ""}
+        ${lp.status === "Needs Adjustment" ? `<button class="btn sm navy" data-resubmit="${lp.id}">Mark Adjusted & Resubmit</button>` : ""}
+      </div>`;
+    }).join("");
+    document.querySelectorAll("[data-resubmit]").forEach(btn => btn.addEventListener("click", () => {
+      A.updateLessonPlan(btn.getAttribute("data-resubmit"), { status: "Pending Review" });
+      A.toast("Resubmitted to VP.");
+      renderLessonPlans();
+    }));
+  }
+
+  // ---- Timetable (simple generated grid) ----
+  function renderTimetable() {
+    const days = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
+    const periods = ["8:00–8:40","8:40–9:20","9:20–10:00","10:20–11:00","11:00–11:40"];
+    let html = "<table><thead><tr><th>Period</th>" + days.map(d=>`<th>${d}</th>`).join("") + "</tr></thead><tbody>";
+    periods.forEach((p,i) => {
+      html += `<tr><td>${p}</td>`;
+      days.forEach((d,j) => {
+        const cls = teacher.classes[(i+j) % teacher.classes.length];
+        html += `<td>${(i+j)%3===0 ? `${teacher.subject} — ${cls}` : "—"}</td>`;
+      });
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    document.getElementById("timetableTable").innerHTML = html;
+  }
+
+  // ---- Attendance sign-in ----
+  function renderAttendance() {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0,10);
+    const log = A.getAttendanceLog(teacher);
+    const already = log.find(l => l.date === todayStr);
+    const gateClosed = today.getHours() >= 16;
+    document.getElementById("attToday").innerHTML = already
+      ? `You signed in today at <b>${already.time}</b> — <span class="badge ${already.status==='Late'?'red':'green'}">${already.status}</span>`
+      : gateClosed ? `<span style="color:var(--red)">The sign-in window has closed for today.</span>`
+      : "You have not signed in yet today.";
+    document.getElementById("signInBtn").disabled = !!already || gateClosed;
+    document.getElementById("myAttBody").innerHTML = log.slice().reverse().map(l => `<tr><td>${A.fmtDate(l.date)}</td><td>${l.time}</td><td><span class="badge ${l.status==='Late'?'red':'green'}">${l.status}</span></td></tr>`).join("");
+  }
+  document.getElementById("signInBtn").addEventListener("click", () => {
+    const now = new Date();
+    const hh = now.getHours(), mm = now.getMinutes();
+    const status = hh >= 8 ? "Late" : "On Time";
+    A.tickAttendance(teacher.id, { date: now.toISOString().slice(0,10), time: `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`, status, note: status==="Late" ? "Reported to VP before signing in, as required." : null });
+    A.toast(status === "Late" ? "Signed in — flagged late for VP review." : "Signed in — on time.");
+    renderAttendance(); renderOverview();
+  });
+
+  // ---- Calendar ----
+  function renderCalendar() {
+    document.getElementById("tCalList").innerHTML = SCHOOL.calendarEvents.map(ev => { const d=new Date(ev.date); return `<div class="cal-item"><div class="cal-date"><b>${d.getDate()}</b><span>${d.toLocaleDateString("en-GB",{month:"short"})}</span></div><div><h4>${A.esc(ev.title)} <span class="badge gold">${A.esc(ev.type)}</span></h4><p>${A.esc(ev.desc)}</p></div></div>`; }).join("");
+  }
+
+  // ---- Comments about me ----
+  function renderMyComments() {
+    const container = document.createElement("div");
+    A.renderCommentThread(container, A.getTeacherComments(teacher));
+    document.getElementById("myComments").innerHTML = "";
+    document.getElementById("myComments").appendChild(container);
+  }
+
+  renderOverview(); renderStudents(); renderScores(); renderAssignments(); renderLessonPlans(); renderTimetable(); renderAttendance(); renderCalendar(); renderMyComments();
+})();
+</script>
+</body>
+</html>
